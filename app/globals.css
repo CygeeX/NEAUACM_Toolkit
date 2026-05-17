@@ -89,3 +89,7 @@
         @apply bg-background text-foreground;
     }
 }
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  transform: translateX(-16px);
+}
