@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 // 将届数数字转换为中文
 function editionToChinese(n: number): string {
@@ -216,7 +217,7 @@ export default function CertificateEditorPage() {
 
   async function handlePreview() {
     if (!formData.date || !formData.name || !formData.engName) {
-      alert("请填写完整信息：比赛日期、姓名、英文名为必填项");
+      toast.warning("请填写完整信息：比赛日期、姓名、英文名为必填项");
       return;
     }
     const dataURL = await generateCertificate();
@@ -247,7 +248,7 @@ export default function CertificateEditorPage() {
 
       // 校验表头
       if (rows.length === 0 || !("姓名" in rows[0]) || !("奖项" in rows[0])) {
-        alert('Excel 缺少"姓名"或"奖项"表头，请检查文件格式。');
+        toast.error('Excel 缺少"姓名"或"奖项"表头，请检查文件格式。');
         setBatchRows([]);
         setBatchFileName("");
         return;
@@ -265,11 +266,11 @@ export default function CertificateEditorPage() {
   // ====== 批量生成：循环生成 PNG 并打包 ZIP ======
   async function handleBatchGenerate() {
     if (batchRows.length === 0) {
-      alert("请先上传 Excel 文件");
+      toast.warning("请先上传 Excel 文件");
       return;
     }
     if (!formData.date) {
-      alert("请在单人生成区域填写比赛日期，批量生成会复用该日期信息");
+      toast.warning("请在单人生成区域填写比赛日期，批量生成会复用该日期信息");
       return;
     }
     setBatchGenerating(true);
@@ -296,7 +297,7 @@ export default function CertificateEditorPage() {
       const blob = await zip.generateAsync({ type: "blob" });
       saveAs(blob, `certificates-${formData.date || "batch"}.zip`);
     } catch (err) {
-      alert("批量生成失败：" + String(err));
+      toast.error("批量生成失败：" + String(err));
     } finally {
       setBatchGenerating(false);
     }
@@ -342,7 +343,7 @@ export default function CertificateEditorPage() {
                     <Input
                       readOnly
                       value={formData.competitionCn}
-                      placeholder="自动生成"
+                      placeholder="eg:第十三届 "
                       className="mt-1 cursor-default"
                     />
                   </div>
@@ -441,12 +442,18 @@ export default function CertificateEditorPage() {
 
       {/* ====== 批量生成区域 ====== */}
       <section className="rounded-2xl border border-border bg-card shadow-md p-6">
-        <div className="mb-5">
-          <h2 className="text-lg font-bold">批量生成</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            上传 Excel，读取姓名和奖项，一次性生成多张证书并打包下载。
-          </p>
-        </div>
+      <div className="mb-5">
+      <div className="flex items-center gap-2">
+      <h2 className="text-lg font-bold">批量生成</h2>
+       <span className="text-sm text-muted-foreground">
+      默认打印模式
+         </span>
+  </div>
+
+  <p className="text-sm text-muted-foreground mt-1">
+    上传 Excel，读取姓名和奖项，一次性生成多张证书并打包下载。
+  </p>
+</div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-14">
           {/* 左：上传 Excel */}

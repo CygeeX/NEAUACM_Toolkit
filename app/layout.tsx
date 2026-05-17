@@ -3,6 +3,7 @@ import "./globals.css";
 import { ReactNode } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/appSidebar";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "NEAUACM Toolkit",
@@ -21,6 +22,7 @@ export default function RootLayout({
         <link rel="icon" href="/icon.png?<generated>" type="image/<generated>" sizes="<generated>" />
       </head>
       <body>
+        <Toaster richColors position="top-center" />
         <div className="flex h-screen">
           <SidebarProvider>
             <AppSidebar />
