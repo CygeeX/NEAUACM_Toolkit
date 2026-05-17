@@ -232,9 +232,20 @@ export default function CertificateEditorPage() {
   }
 
   // ====== 批量生成：解析 Excel ======
-  function handleBatchFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // 验证文件类型
+  function isExcelFile(file: File): boolean {
+    const validExtensions = [".xlsx", ".xls"];
+    const fileName = file.name.toLowerCase();
+    return validExtensions.some((ext) => fileName.endsWith(ext));
+  }
+
+  // 抽取文件解析逻辑，供点击上传和拖拽上传复用
+  function handleFile(file: File) {
+    if (!isExcelFile(file)) {
+      toast.error("仅支持上传 Excel 文件（.xlsx 或 .xls）");
+      return;
+    }
+
     setBatchFileName(file.name);
 
     const reader = new FileReader();
@@ -261,6 +272,25 @@ export default function CertificateEditorPage() {
       setBatchRows(parsed);
     };
     reader.readAsArrayBuffer(file);
+  }
+
+  // 点击上传
+  function handleBatchFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    handleFile(file);
+  }
+
+  // 拖拽上传
+  function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+  }
+
+  function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    handleFile(file);
   }
 
   // ====== 批量生成：循环生成 PNG 并打包 ZIP ======
@@ -470,10 +500,12 @@ export default function CertificateEditorPage() {
                 className="hidden"
                 onChange={handleBatchFileChange}
               />
-              {/* 虚线上传区域，点击触发 input */}
+              {/* 虚线上传区域，点击触发 input，支持拖拽 */}
               <div
                 className="flex items-center justify-center h-40 rounded-xl border-2 border-dashed border-muted-foreground/40 bg-muted/30 cursor-pointer hover:border-primary/50 transition-colors"
                 onClick={() => batchFileInputRef.current?.click()}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
               >
                 <span className="text-sm text-muted-foreground font-medium">
                   {batchFileName ? batchFileName : "点击上传或拖动文件到此处"}
