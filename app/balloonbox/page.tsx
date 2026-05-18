@@ -178,6 +178,16 @@ export default function BalloonBoxPage() {
     return validExtensions.some((ext) => fileName.endsWith(ext));
   }
 
+  // 表头/单元格清洗：移除 BOM、零宽字符、全角空格、不间断空格、换行制表符等
+  function normalizeHeader(s: unknown): string {
+    return String(s ?? "")
+      .replace(/[﻿​‌‍⁠]/g, "") // BOM + 零宽
+      .replace(/　/g, "")                            // 全角空格
+      .replace(/ /g, "")                            // 不间断空格
+      .replace(/\s+/g, "")                               // 普通空白（含换行/制表/空格）
+      .trim();
+  }
+
   function handleFile(file: File) {
     if (!isExcelFile(file)) {
       toast.error("仅支持上传 Excel 文件（.xlsx 或 .xls）");
@@ -208,14 +218,25 @@ export default function BalloonBoxPage() {
           return;
         }
 
-        // 第一行是表头，trim 后校验
-        const headers = rows[0].map((h) => String(h).trim());
+        // 第一行是表头，清洗后校验
+        const rawHeaders = rows[0].map((h) => String(h ?? ""));
+        const headers = rawHeaders.map(normalizeHeader);
+
+        // 调试输出：方便确认实际读到的表头到底是什么
+        console.log("[balloonbox] 原始表头:", rawHeaders);
+        console.log("[balloonbox] 原始表头字符码:", rawHeaders.map((h) =>
+          Array.from(h).map((c) => c.charCodeAt(0).toString(16)).join(" ")
+        ));
+        console.log("[balloonbox] 清洗后表头:", headers);
+
         const seatNoIndex = headers.indexOf("座位号");
         const majorIndex = headers.indexOf("专业班级");
         const nameIndex = headers.indexOf("姓名");
 
         if (seatNoIndex === -1 || majorIndex === -1 || nameIndex === -1) {
-          toast.error('Excel 缺少"座位号"、"专业班级"或"姓名"表头，请检查文件格式。');
+          toast.error(
+            `Excel 缺少"座位号"、"专业班级"或"姓名"表头。实际读到的表头：${headers.join(" | ") || "(空)"}`
+          );
           setBatchRows([]);
           setBatchFileName("");
           return;
@@ -224,7 +245,7 @@ export default function BalloonBoxPage() {
         // 从第二行开始读取数据
         const parsed: BatchRow[] = [];
         for (let i = 1; i < rows.length; i++) {
-          const row = rows[i];
+          const row = rows[i] || [];
           const seatNo = String(row[seatNoIndex] ?? "").trim();
           const major = String(row[majorIndex] ?? "").trim();
           const name = String(row[nameIndex] ?? "").trim();
@@ -243,6 +264,7 @@ export default function BalloonBoxPage() {
         }
 
         setBatchRows(parsed);
+        toast.success(`已读取 ${parsed.length} 条数据`);
       } catch (err) {
         toast.error("Excel 解析失败：" + String(err));
         setBatchRows([]);
