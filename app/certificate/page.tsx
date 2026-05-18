@@ -4,12 +4,68 @@ import { useRef, useState } from "react";
 import * as XLSX from "xlsx";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
+import { pinyin } from "pinyin-pro";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+
+// 常见复姓列表，用于切分姓和名
+const COMPOUND_SURNAMES = [
+  "欧阳", "太史", "端木", "上官", "司马", "东方", "独孤", "南宫",
+  "万俟", "闻人", "夏侯", "诸葛", "尉迟", "公羊", "赫连", "澹台",
+  "皇甫", "宗政", "濮阳", "公冶", "太叔", "申屠", "公孙", "慕容",
+  "仲孙", "钟离", "长孙", "宇文", "司徒", "鲜于", "司空", "闾丘",
+  "子车", "亓官", "司寇", "巫马", "公西", "颛孙", "壤驷", "公良",
+  "漆雕", "乐正", "宰父", "谷梁", "拓跋", "夹谷", "轩辕", "令狐",
+  "段干", "百里", "呼延", "东郭", "南门", "羊舌", "微生", "西门",
+  "左丘", "第五",
+];
+
+// 把中文姓名转换为英文名：
+// 张三 -> Zhang San
+// 王小明 -> Wang Xiaoming
+// 欧阳娜娜 -> Ouyang Nana
+function chineseToEnglishName(cnName: string): string {
+  const name = (cnName || "").trim();
+  if (!name) return "";
+
+  // 仅处理纯中文字符
+  if (!/^[一-龥]+$/.test(name)) return "";
+
+  // 复姓优先识别（长度 >= 3 才考虑复姓）
+  let surnameLen = 1;
+  if (name.length >= 3 && COMPOUND_SURNAMES.includes(name.slice(0, 2))) {
+    surnameLen = 2;
+  }
+
+  const surname = name.slice(0, surnameLen);
+  const givenName = name.slice(surnameLen);
+
+  const capitalize = (s: string) =>
+    s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : "";
+
+  // 姓氏用 surname 模式，让 pinyin-pro 处理特殊读音（单/sh shàn 等）
+  const surnamePinyin = pinyin(surname, {
+    toneType: "none",
+    type: "array",
+    mode: "surname",
+  }).join("");
+
+  if (!givenName) {
+    return capitalize(surnamePinyin);
+  }
+
+  // 名字部分合并为一个单词
+  const givenNamePinyin = pinyin(givenName, {
+    toneType: "none",
+    type: "array",
+  }).join("");
+
+  return `${capitalize(surnamePinyin)} ${capitalize(givenNamePinyin)}`;
+}
 
 // 将届数数字转换为中文
 function editionToChinese(n: number): string {
@@ -23,10 +79,24 @@ function editionToChinese(n: number): string {
   return tens[t] + ones[o];
 }
 
-// 将届数数字转换为英文序数词
+// 将届数数字转换为英文序数词规则
 function editionToEnglish(n: number): string {
-  const suffixes: Record<number, string> = { 1: "st", 2: "nd", 3: "rd" };
-  const suffix = suffixes[n % 100] || suffixes[n % 10] || "th";
+  const lastTwo = n % 100;
+  const lastOne = n % 10;
+
+  // 11、12、13 特殊情况
+  if (lastTwo >= 11 && lastTwo <= 13) {
+    return `${n}th`;
+  }
+
+  const suffixes: Partial<Record<number, string>> = {
+    1: "st",
+    2: "nd",
+    3: "rd",
+  };
+
+  const suffix = suffixes[lastOne] || "th";
+
   return `${n}${suffix}`;
 }
 
@@ -373,7 +443,7 @@ export default function CertificateEditorPage() {
                     <Input
                       readOnly
                       value={formData.competitionCn}
-                      placeholder="eg:第十三届 "
+                      placeholder="填写日期后自动生成赛别"
                       className="mt-1 cursor-default"
                     />
                   </div>
@@ -389,7 +459,16 @@ export default function CertificateEditorPage() {
                       placeholder="姓名"
                       id="name"
                       value={formData.name}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                      onChange={(e) => {
+                        const cnName = e.target.value;
+                        // 中文姓名变化时，自动生成英文名并覆盖；英文名输入框仍可手动编辑
+                        // 非纯中文输入（IME 中间态等）时返回空，保留原 engName，避免被空串覆盖
+                        setFormData((prev) => ({
+                          ...prev,
+                          name: cnName,
+                          engName: chineseToEnglishName(cnName) || prev.engName,
+                        }));
+                      }}
                       className="mt-1"
                     />
                   </div>
