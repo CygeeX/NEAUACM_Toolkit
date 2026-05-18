@@ -218,7 +218,7 @@ function drawCertificateToDataURL(params: DrawParams): Promise<string> {
 
       // B. 中间：姓名（中英文同一行）
       ctx.textAlign = "center";
-      ctx.font = `bold ${w * 0.040}px "STKaiti", "KaiTi", "SimKai", "楷体", serif`;;
+      ctx.font = `bold ${w * 0.040}px "STKaiti", "KaiTi", "SimKai", "楷体", serif`;
       ctx.fillText(fullName, w * 0.50, h * 0.445);
 
       // C. 中间：奖项（中英文同一行）

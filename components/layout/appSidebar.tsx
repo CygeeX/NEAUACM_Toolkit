@@ -10,13 +10,14 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Award, CheckSquare, FileOutput, Globe, Home, LayoutDashboard, SwitchCamera } from "lucide-react";
+import { Award, CheckSquare, FileOutput, Globe, Home, LayoutDashboard, SwitchCamera, Box } from "lucide-react";
 import Link from "next/link";
 
 export function AppSidebar() {
   const toolItems = [
     { name: "假条生成", href: "/leavn", icon: FileOutput },
     { name: "证书生成", href: "/certificate", icon: Award },
+    { name: "气球盒生成", href: "/balloonbox", icon: Box },
     { name: "数据转换", href: "/convert", icon: SwitchCamera },
   ];
   const linkItems = [
