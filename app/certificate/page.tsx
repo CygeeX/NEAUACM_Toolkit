@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { createPortal } from "react-dom";
 import { toast } from "sonner";
 
 // 常见复姓列表，用于切分姓和名
@@ -659,39 +660,41 @@ export default function CertificateEditorPage() {
       </section>
 
       {/* 证书预览弹窗（原有，不改动）*/}
-      {showPreview && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+{showPreview &&
+  createPortal(
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60"
+      onClick={() => setShowPreview(false)}
+    >
+      <div
+        className="relative max-w-4xl w-full mx-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          className="absolute -top-8 right-16 text-white text-sm hover:underline"
+          onClick={() => {
+            const a = document.createElement("a");
+            a.download = `certificate-${formData.name || "unknown"}-${formData.date || "unknown"}.png`;
+            a.href = previewImage;
+            a.click();
+          }}
+        >
+          下载
+        </button>
+
+        <button
+          className="absolute -top-8 right-0 text-white text-sm hover:underline"
           onClick={() => setShowPreview(false)}
         >
-          <div
-            className="relative max-w-4xl w-full mx-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* 下载按钮：从 previewImage dataURL 创建 <a> 标签触发下载 */}
-            <button
-              className="absolute -top-8 right-16 text-white text-sm hover:underline"
-              onClick={() => {
-                const a = document.createElement("a");
-                // 文件名：certificate-姓名-日期.png
-                a.download = `certificate-${formData.name || "unknown"}-${formData.date || "unknown"}.png`;
-                a.href = previewImage;
-                a.click();
-              }}
-            >
-              下载
-            </button>
-            <button
-              className="absolute -top-8 right-0 text-white text-sm hover:underline"
-              onClick={() => setShowPreview(false)}
-            >
-              关闭 ✕
-            </button>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={previewImage} alt="证书预览" className="w-full rounded shadow-lg" />
-          </div>
-        </div>
-      )}
+          关闭 ✕
+        </button>
+
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={previewImage} alt="证书预览" className="w-full rounded shadow-lg" />
+      </div>
+    </div>,
+    document.body
+  )}
     </div>
   );
 }
