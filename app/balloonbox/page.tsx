@@ -596,7 +596,7 @@ export default function BalloonBoxPage() {
 {showPreview &&
   createPortal(
         <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60"
+          className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60"
           onClick={() => setShowPreview(false)}
         >
           <div className="relative max-w-4xl w-full mx-4" onClick={(e) => e.stopPropagation()}>
