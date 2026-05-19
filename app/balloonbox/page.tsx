@@ -337,7 +337,7 @@ export default function BalloonBoxPage() {
         <div className="mb-5">
           <h2 className="text-lg font-bold">手动生成</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            输入一个赛事名称，填写 3 位同学的姓名、专业信息和座位号。
+            输入赛事名称，填写 3 位同学的个人信息。示例：张志豪 | 经济2507 | A67
           </p>
         </div>
 
@@ -377,7 +377,7 @@ export default function BalloonBoxPage() {
                       }}
                     />
                     <Input
-                      placeholder="专业信息"
+                      placeholder="专业班级"
                       value={formData.students[0].major}
                       onChange={(e) => {
                         const newStudents = [...formData.students] as [StudentInfo, StudentInfo, StudentInfo];
@@ -411,7 +411,7 @@ export default function BalloonBoxPage() {
                       }}
                     />
                     <Input
-                      placeholder="专业信息"
+                      placeholder="专业班级"
                       value={formData.students[1].major}
                       onChange={(e) => {
                         const newStudents = [...formData.students] as [StudentInfo, StudentInfo, StudentInfo];
@@ -445,7 +445,7 @@ export default function BalloonBoxPage() {
                       }}
                     />
                     <Input
-                      placeholder="专业信息"
+                      placeholder="专业班级"
                       value={formData.students[2].major}
                       onChange={(e) => {
                         const newStudents = [...formData.students] as [StudentInfo, StudentInfo, StudentInfo];
