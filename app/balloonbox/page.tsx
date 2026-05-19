@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-
+import { createPortal } from "react-dom";
 // ====== 坐标常量配置区域 ======
 // 后续调整文字位置时只需修改这里的常量
 const CANVAS_CONFIG = {
@@ -86,21 +86,27 @@ function drawBalloonBoxToDataURL(
           const centerX = w * box.x;
           const centerY = h * box.y;
 
-          // 赛事名称
+          // 赛事名称（每个格子都绘制）
           ctx.font = `bold ${w * CANVAS_CONFIG.COMPETITION_FONT_SIZE}px "STKaiti", "KaiTi", "SimKai", "楷体", serif`;
           ctx.fillText(competition, centerX, centerY + h * CANVAS_CONFIG.OFFSET_COMPETITION);
 
-          // 座位号
-          ctx.font = `bold ${w * CANVAS_CONFIG.SEAT_FONT_SIZE}px "STZhongsong", "华文中宋", "SimSun", "宋体", serif`;
-          ctx.fillText(student.seatNo, centerX, centerY + h * CANVAS_CONFIG.OFFSET_SEAT);
+          // 座位号（非空才绘制）
+          if (student.seatNo.trim()) {
+            ctx.font = `bold ${w * CANVAS_CONFIG.SEAT_FONT_SIZE}px "STZhongsong", "华文中宋", "SimSun", "宋体", serif`;
+            ctx.fillText(student.seatNo, centerX, centerY + h * CANVAS_CONFIG.OFFSET_SEAT);
+          }
 
-          // 专业信息
-          ctx.font = `bold ${w * CANVAS_CONFIG.MAJOR_FONT_SIZE}px "STZhongsong", "华文中宋", "SimSun", "宋体", serif`;
-          ctx.fillText(student.major, centerX, centerY + h * CANVAS_CONFIG.OFFSET_MAJOR);
+          // 专业信息（非空才绘制）
+          if (student.major.trim()) {
+            ctx.font = `bold ${w * CANVAS_CONFIG.MAJOR_FONT_SIZE}px "STZhongsong", "华文中宋", "SimSun", "宋体", serif`;
+            ctx.fillText(student.major, centerX, centerY + h * CANVAS_CONFIG.OFFSET_MAJOR);
+          }
 
-          // 姓名
-          ctx.font = `bold ${w * CANVAS_CONFIG.NAME_FONT_SIZE}px "STZhongsong", "华文中宋", "SimSun", "宋体", serif`;
-          ctx.fillText(student.name, centerX, centerY + h * CANVAS_CONFIG.OFFSET_NAME);
+          // 姓名（非空才绘制）
+          if (student.name.trim()) {
+            ctx.font = `bold ${w * CANVAS_CONFIG.NAME_FONT_SIZE}px "STZhongsong", "华文中宋", "SimSun", "宋体", serif`;
+            ctx.fillText(student.name, centerX, centerY + h * CANVAS_CONFIG.OFFSET_NAME);
+          }
         });
       });
 
@@ -155,10 +161,6 @@ export default function BalloonBoxPage() {
   async function handlePreview() {
     if (!formData.competition) {
       toast.warning("请填写赛事名称");
-      return;
-    }
-    if (formData.students.some((s) => !s.name || !s.major || !s.seatNo)) {
-      toast.warning("请填写完整的同学信息（姓名、专业信息、座位号）");
       return;
     }
 
@@ -591,9 +593,10 @@ export default function BalloonBoxPage() {
       </section>
 
       {/* 预览弹窗 */}
-      {showPreview && (
+{showPreview &&
+  createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60"
           onClick={() => setShowPreview(false)}
         >
           <div className="relative max-w-4xl w-full mx-4" onClick={(e) => e.stopPropagation()}>
@@ -617,7 +620,8 @@ export default function BalloonBoxPage() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={previewImage} alt="气球盒预览" className="w-full rounded shadow-lg" />
           </div>
-        </div>
+        </div>,
+    document.body
       )}
     </div>
   );
