@@ -12,8 +12,8 @@ export default function HomePage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Link href="/leavn" passHref>
-          <Card className="cursor-pointer">
-            <CardHeader>
+          <Card className="cursor-pointer ">
+            <CardHeader className="px-5 py-5">
               <CardTitle className="flex items-center">
                 <FileOutput className="mr-2" />
                 假条生成
@@ -23,7 +23,7 @@ export default function HomePage() {
         </Link>
         <Link href="/certificate" passHref>
           <Card>
-            <CardHeader>
+            <CardHeader className="px-5 py-5">
               <CardTitle className="flex items-center">
                 <Award className="mr-2" />
                 证书生成
@@ -33,7 +33,7 @@ export default function HomePage() {
         </Link>
         <Link href="/convert" passHref>
           <Card>
-            <CardHeader>
+            <CardHeader className="px-5 py-5">
               <CardTitle className="flex items-center">
                 <SwitchCamera className="mr-2" />
                 数据转换
@@ -41,12 +41,12 @@ export default function HomePage() {
             </CardHeader>
           </Card>
         </Link>
-        <Link href="https://oj.neauacm.cn/" passHref>
+        <Link href="https://fusiondepot.cn/" passHref>
           <Card>
-            <CardHeader>
+            <CardHeader className="px-4 py-5">
               <CardTitle className="flex items-center">
                 <Code className="mr-2" />
-                在线评测
+                文件管理
               </CardTitle>
             </CardHeader>
           </Card>
